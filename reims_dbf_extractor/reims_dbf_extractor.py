@@ -6,10 +6,20 @@ import pandas as pd
 from dbfread import DBF
 
 p = Path('files')
-for path in p.glob('*.DBF'):
-    print(path)
+files = [
+    "Glsku.dbf",
+    "Dispense.dbf",
+    "Rdinv.dbf",
+    "Rdtrak.dbf",
+    "Rdadd.dbf",
+    "Readd.dbf",
+    "Deleted.dbf"
+]
+
+for file in files:
     try:
-        dbf = DBF(path, load=True, char_decode_errors='ignore')
+        print("\n" + file + "\n---------------------------")
+        dbf = DBF(p / file, load=True, char_decode_errors='ignore')
         frame = pd.DataFrame(iter(dbf))
         print(frame)
     except Exception as e:

@@ -3,7 +3,7 @@ REIMS DBF extractor
 ===================
 
 
-Python tool for extracting Visual Fox Pro DBF (database files) of the REIMS project.
+Python tool for extracting Visual Fox Pro DBF (database files) from the REIMS project.
 
 
 * Free software: GNU General Public License v3
