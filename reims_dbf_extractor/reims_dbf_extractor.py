@@ -22,7 +22,7 @@ def map_gender(x):
     if x == 'M':
         return 'masculine'
     if x == 'F':
-        return 'feminin'
+        return 'feminine'
     if x == 'U':
         return 'neutral'
     return 'unknown'
@@ -48,18 +48,18 @@ for file in files:
         print(e)
 
 # Converting to JSON for testing in frontend
-dbf_main = DBF(p / "Glsku.dbf")
+dbf_main = DBF(p / "Glsku_old.dbf")
 df = pd.DataFrame(iter(dbf_main))
 
 # remove RXX: prefix from SKU (not needed)
 df['SKU'] = df['SKU'].apply(lambda x: x.split(":")[-1])
 df['TYPE'] = df['TYPE'].apply(lambda x: 'single' if x == 'S' else 'bifocal' if x == 'B' else 'unknown')
 df['SIZE'] = df['SIZE'].apply(map_size)
-df['APPEARANCE'] = df['APPEARANCE'].apply(map_gender)
+df['APPEARANCE'] = df['GENDER'].apply(map_gender)
 df['MATERIAL'] = df['MATERIAL'].apply(lambda x: 'plastic' if x == 'P' else 'metal' if x == 'M' else 'unknown')
 
 # drop unused columns
-df = df.drop(columns=['TINT', 'ENTERDATE', 'APPEARANCE'])
+df = df.drop(columns=['TINT', 'ENTERDATE', 'GENDER'])
 
 # convert to JSON and directly save in frontend assets foldeer
 dfj = json.loads(df.reset_index().to_json(orient='records'))
