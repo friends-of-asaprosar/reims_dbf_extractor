@@ -48,18 +48,22 @@ for file in files:
         print(e)
 
 # Converting to JSON for testing in frontend
-dbf_main = DBF(p / "Glsku_old.dbf")
-df = pd.DataFrame(iter(dbf_main))
+dbf_sa = DBF(p / "GLSKU_SA.dbf")
+dbf_sm = DBF(p / "GLSKU_SM.dbf")
+df_sa = pd.DataFrame(iter(dbf_sa))
+df_sm = pd.DataFrame(iter(dbf_sm))
+df = pd.concat([df_sa, df_sm])
 
 # remove RXX: prefix from SKU (not needed)
-df['SKU'] = df['SKU'].apply(lambda x: x.split(":")[-1])
+df['SKU'] = df['SKU'].apply(lambda x: x.split(":")[-1].split(" ")[0])
 df['TYPE'] = df['TYPE'].apply(lambda x: 'single' if x == 'S' else 'bifocal' if x == 'B' else 'unknown')
 df['SIZE'] = df['SIZE'].apply(map_size)
 df['APPEARANCE'] = df['GENDER'].apply(map_gender)
-df['MATERIAL'] = df['MATERIAL'].apply(lambda x: 'plastic' if x == 'P' else 'metal' if x == 'M' else 'unknown')
 
 # drop unused columns
-df = df.drop(columns=['TINT', 'ENTERDATE', 'GENDER'])
+df = df.drop(columns=['TINT', 'ENTERDATE', 'GENDER', 'MATERIAL'])
+
+df.columns = map(str.lower, df.columns)
 
 # convert to JSON and directly save in frontend assets foldeer
 dfj = json.loads(df.reset_index().to_json(orient='records'))
