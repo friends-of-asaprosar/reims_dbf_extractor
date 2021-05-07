@@ -59,13 +59,17 @@ df['SKU'] = df['SKU'].apply(lambda x: x.split(":")[-1].split(" ")[0])
 df['TYPE'] = df['TYPE'].apply(lambda x: 'single' if x == 'S' else 'bifocal' if x == 'B' else 'unknown')
 df['SIZE'] = df['SIZE'].apply(map_size)
 df['APPEARANCE'] = df['GENDER'].apply(map_gender)
-
-# drop unused columns
-df = df.drop(columns=['TINT', 'ENTERDATE', 'GENDER', 'MATERIAL'])
-
 df.columns = map(str.lower, df.columns)
 
-# convert to JSON and directly save in frontend assets foldeer
-dfj = json.loads(df.reset_index().to_json(orient='records'))
+
+final = []
+# drop unused columns
+for i, col in enumerate(df.iterrows()):
+    col = col[1]
+    od_df = {'sphere': col['odsphere'], 'axis': col['odaxis'], 'cyl': col['odcylinder'], 'add': col['odadd']}
+    os_df = {'sphere': col['ossphere'], 'axis': col['osaxis'], 'cyl': col['oscylinder'], 'add': col['osadd']}
+    final.append({'id': i, 'sku': col['sku'], 'type': col['type'], 'od': od_df, 'os': os_df, 'appearance': col['appearance'], 'size': col['size']})
+
+
 with open(Path("../").resolve() / "reims2-frontend/assets/out.json", 'w', encoding='utf-8') as f:
-    json.dump(dfj, f, ensure_ascii=False, indent=4)
+    json.dump(final, f, ensure_ascii=False, indent=4)
