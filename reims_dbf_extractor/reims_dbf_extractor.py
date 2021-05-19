@@ -4,6 +4,8 @@ from pathlib import Path
 import json
 import pandas as pd
 from dbfread import DBF
+import asyncio
+import aiohttp
 
 
 def map_size(x):
@@ -66,10 +68,28 @@ final = []
 # drop unused columns
 for i, col in enumerate(df.iterrows()):
     col = col[1]
-    od_df = {'sphere': col['odsphere'], 'axis': col['odaxis'], 'cyl': col['odcylinder'], 'add': col['odadd']}
-    os_df = {'sphere': col['ossphere'], 'axis': col['osaxis'], 'cyl': col['oscylinder'], 'add': col['osadd']}
-    final.append({'id': i, 'sku': col['sku'], 'type': col['type'], 'od': od_df, 'os': os_df, 'appearance': col['appearance'], 'size': col['size']})
+    od_df = {'sphere': col['odsphere'], 'axis': col['odaxis'], 'cylinder': col['odcylinder'], 'add': col['odadd']}
+    os_df = {'sphere': col['ossphere'], 'axis': col['osaxis'], 'cylinder': col['oscylinder'], 'add': col['osadd']}
+    final.append({'id': i, 'sku': col['sku'], 'glassesType': col['type'], 'od': od_df, 'os': os_df,
+                  'appearance': col['appearance'], 'glassesSize': col['size'], 'dispensed': False, 'material': 'any'})
 
 
-with open(Path("../").resolve() / "reims2-frontend/assets/out.json", 'w', encoding='utf-8') as f:
-    json.dump(final, f, ensure_ascii=False, indent=4)
+# with open(Path("../").resolve() / "reims2-frontend/assets/out.json", 'w', encoding='utf-8') as f:
+#    json.dump(final, f, ensure_ascii=False, indent=4)
+
+
+# Upload URLs to backend
+
+async def make_parallel_post(data, i):
+    async with aiohttp.ClientSession() as session:
+        async with session.post("https://api.reims2.duckdns.org/pvh/api/glasses", json=data) as resp:
+            print(resp.status, i)
+
+loop = asyncio.get_event_loop()
+tasks = []
+for i, item in enumerate(final):
+    if i < 5000 or i > 7000:
+        continue
+    task = asyncio.ensure_future(make_parallel_post(item, i))
+    tasks.append(task)
+loop.run_until_complete(asyncio.wait(tasks))
