@@ -68,10 +68,14 @@ final = []
 # drop unused columns
 for i, col in enumerate(df.iterrows()):
     col = col[1]
-    od_df = {'sphere': col['odsphere'], 'axis': col['odaxis'], 'cylinder': col['odcylinder'], 'add': col['odadd']}
-    os_df = {'sphere': col['ossphere'], 'axis': col['osaxis'], 'cylinder': col['oscylinder'], 'add': col['osadd']}
+    od_df = {'sphere': col['odsphere'], 'axis': col['odaxis'], 'cylinder': col['odcylinder']}
+    os_df = {'sphere': col['ossphere'], 'axis': col['osaxis'], 'cylinder': col['oscylinder']}
+    if col['type'] != 'single':
+        od_df['add'] = col['odadd']
+        os_df['add'] = col['osadd']
+    location = 'sm' if int(col['sku']) > 5000 else 'sa'
     final.append({'id': i, 'sku': col['sku'], 'glassesType': col['type'], 'od': od_df, 'os': os_df,
-                  'appearance': col['appearance'], 'glassesSize': col['size'], 'dispensed': False, 'material': 'any'})
+                  'appearance': col['appearance'], 'glassesSize': col['size'], 'dispense': {}, 'material': 'any', 'location': location})
 
 
 # with open(Path("../").resolve() / "reims2-frontend/assets/out.json", 'w', encoding='utf-8') as f:
@@ -88,7 +92,7 @@ async def make_parallel_post(data, i):
 loop = asyncio.get_event_loop()
 tasks = []
 for i, item in enumerate(final):
-    if i < 5000 or i > 7000:
+    if (i < 5000 or i > 7000):
         continue
     task = asyncio.ensure_future(make_parallel_post(item, i))
     tasks.append(task)
