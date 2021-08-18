@@ -49,8 +49,8 @@ def convert_to_dict(df):
             continue
         if any(c.isalpha() for c in col['sku']):
             col['sku'] = -1
-        od_df = {'sphere': float(col['odsphere']), 'axis': float(col['odaxis']), 'cylinder': float(col['odcylinder'])}
-        os_df = {'sphere': float(col['ossphere']), 'axis': float(col['osaxis']), 'cylinder': float(col['oscylinder'])}
+        od_df = {'sphere': float(col['odsphere']), 'axis': int(col['odaxis']), 'cylinder': float(col['odcylinder'])}
+        os_df = {'sphere': float(col['ossphere']), 'axis': int(col['osaxis']), 'cylinder': float(col['oscylinder'])}
         if col['type'] != 'single':
             od_df['add'] = float(col['odadd'])
             os_df['add'] = float(col['osadd'])
@@ -66,10 +66,10 @@ def convert_to_mysql(glasses):
     glasses_counter = 1
     dispense_counter = 1
     for glass in glasses:
-        sqls.append(f"INSERT INTO eye VALUES({eye_counter}, '{glass['od']['sphere']}'," +
-                    f" '{glass['od']['cylinder']}', '{glass['od']['axis']}', '{glass['od'].get('add', '')}');")
-        sqls.append(f"INSERT INTO eye VALUES({eye_counter + 1}, '{glass['os']['sphere']}'," +
-                    f" '{glass['os']['cylinder']}', '{glass['os']['axis']}', '{glass['os'].get('add', '')}');")
+        sqls.append(f"INSERT INTO eye VALUES({eye_counter}, {glass['od']['sphere']}," +
+                    f" {glass['od']['cylinder']}, {glass['od']['axis']}, {glass['od'].get('add', 0.0)});")
+        sqls.append(f"INSERT INTO eye VALUES({eye_counter + 1}, {glass['os']['sphere']}," +
+                    f" {glass['os']['cylinder']}, {glass['os']['axis']}, {glass['os'].get('add', 0.0)});")
         sqls.append(f"INSERT INTO dispense VALUES ({dispense_counter},'2019-08-15 15:48:19');")
         sqls.append(f"INSERT INTO glasses VALUES ({glasses_counter}, {glass['sku']}," +
                     f" '{glass['glassesType']}', '{glass['glassesSize']}', '{glass['appearance']}', {dispense_counter}," +
@@ -115,7 +115,7 @@ with open(Path("/home/thomas/projects/reims2-backend/src/main/resources/db/mysql
 # Upload URLs to backend
 # async def make_parallel_post(data):
 #     async with aiohttp.ClientSession() as session:
-#         async with session.post("https://api.reims2.duckdns.org/pvh/api/glasses", json=data) as resp:
+#         async with session.post("https://api.reims2.app/pvh/api/glasses", json=data) as resp:
 #             print(f"Status {resp.status} for SKU {data['sku']}")
 
 # loop = asyncio.get_event_loop()
