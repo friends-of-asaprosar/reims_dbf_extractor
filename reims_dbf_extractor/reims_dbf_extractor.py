@@ -56,7 +56,7 @@ def convert_to_dict(df):
             os_df['add'] = float(col['osadd'])
         location = 'sm' if int(col['sku']) > 5000 else 'sa'
         final.append({'sku': int(col['sku']), 'glassesType': col['type'], 'od': od_df, 'os': os_df,
-                      'appearance': col['appearance'], 'glassesSize': col['size'], 'location': location})
+                      'appearance': col['appearance'], 'glassesSize': col['size'], 'location': location, 'creationDate': col['enterdate'].isoformat() + ' 00:00:00'})
     return final
 
 
@@ -73,7 +73,7 @@ def convert_to_mysql(glasses):
         sqls.append(f"INSERT INTO dispense VALUES ({dispense_counter},'2019-08-15 15:48:19');")
         sqls.append(f"INSERT INTO glasses VALUES ({glasses_counter}, {glass['sku']}," +
                     f" '{glass['glassesType']}', '{glass['glassesSize']}', '{glass['appearance']}', {dispense_counter}," +
-                    f" '{glass['location']}', 0, {eye_counter + 1}, {eye_counter});")
+                    f" '{glass['location']}', 0, '{glass['creationDate']}', {eye_counter + 1}, {eye_counter});")
         eye_counter += 2
         glasses_counter += 1
         dispense_counter += 1
