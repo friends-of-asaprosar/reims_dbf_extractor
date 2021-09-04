@@ -70,7 +70,7 @@ def convert_to_mysql(glasses):
                     f" {glass['od']['cylinder']}, {glass['od']['axis']}, {glass['od'].get('add', 0.0)});")
         sqls.append(f"INSERT INTO eye VALUES({eye_counter + 1}, {glass['os']['sphere']}," +
                     f" {glass['os']['cylinder']}, {glass['os']['axis']}, {glass['os'].get('add', 0.0)});")
-        sqls.append(f"INSERT INTO dispense VALUES ({dispense_counter},'2019-08-15 15:48:19');")
+        sqls.append(f"INSERT INTO dispense VALUES ({dispense_counter},'2019-08-15 15:48:19', null);")
         sqls.append(f"INSERT INTO glasses VALUES ({glasses_counter}, {glass['sku']}," +
                     f" '{glass['glassesType']}', '{glass['glassesSize']}', '{glass['appearance']}', {dispense_counter}," +
                     f" '{glass['location']}', 0, '{glass['creationDate']}', {eye_counter + 1}, {eye_counter});")
@@ -102,6 +102,11 @@ df_sa = pd.DataFrame(iter(dbf_sa))
 df_sm = pd.DataFrame(iter(dbf_sm))
 df = pd.concat([df_sa, df_sm])
 final = convert_to_dict(df)
+
+# dbf_dispense_sa = DBF(Path("files/DISPENSE_SA.dbf"))
+# df_dispense_sa = pd.DataFrame(iter(dbf_dispense_sa))
+# dbf_dispense_sm = DBF(Path("files/DISPENSE_SM.dbf"))
+# df_dispense_sm = pd.DataFrame(iter(dbf_dispense_sm))
 
 sql_queries = convert_to_mysql(final)
 with open(Path("/home/thomas/projects/reims2-backend/src/main/resources/db/mysql/populateDB.sql"), 'w', encoding='utf-8') as f:
