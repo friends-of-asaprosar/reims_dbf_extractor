@@ -63,19 +63,18 @@ def convert_to_dict(df):
 def convert_to_mysql(glasses):
     sqls = []
     eye_counter = 1
-    glasses_counter = 1
     dispense_counter = 1
     for glass in glasses:
-        sqls.append(f"INSERT INTO eye VALUES({eye_counter}, {glass['od']['sphere']}," +
+        sqls.append(f"INSERT INTO eye (id, sphere, cylinder, axis, additional) VALUES({eye_counter}, {glass['od']['sphere']}, " +
                     f" {glass['od']['cylinder']}, {glass['od']['axis']}, {glass['od'].get('add', 0.0)});")
-        sqls.append(f"INSERT INTO eye VALUES({eye_counter + 1}, {glass['os']['sphere']}," +
+        sqls.append(f"INSERT INTO eye (id, sphere, cylinder, axis, additional) VALUES({eye_counter + 1}, {glass['os']['sphere']}, " +
                     f" {glass['os']['cylinder']}, {glass['os']['axis']}, {glass['os'].get('add', 0.0)});")
-        sqls.append(f"INSERT INTO dispense VALUES ({dispense_counter},'2019-08-15 15:48:19', null);")
-        sqls.append(f"INSERT INTO glasses VALUES ({glasses_counter}, {glass['sku']}," +
-                    f" '{glass['glassesType']}', '{glass['glassesSize']}', '{glass['appearance']}', {dispense_counter}," +
+        sqls.append(f"INSERT INTO dispense (id, modify_date, previous_sku) VALUES ({dispense_counter}, null, null);")
+        sqls.append(f"INSERT INTO glasses (sku, glasses_type, glasses_size, appearance, dispense_id, location, dispensed, creation_date, os_id, od_id) " +
+                    f"VALUES ({glass['sku']}, '{glass['glassesType']}', " +
+                    f" '{glass['glassesSize']}', '{glass['appearance']}', {dispense_counter}, " +
                     f" '{glass['location']}', 0, '{glass['creationDate']}', {eye_counter + 1}, {eye_counter});")
         eye_counter += 2
-        glasses_counter += 1
         dispense_counter += 1
         sqls.append("")
     return sqls
@@ -109,16 +108,12 @@ final = convert_to_dict(df)
 # df_dispense_sm = pd.DataFrame(iter(dbf_dispense_sm))
 
 sql_queries = convert_to_mysql(final)
-sql_prepend = """INSERT INTO roles VALUES(1, 'ROLE_USER');
-INSERT INTO roles VALUES(2, 'ROLE_MODERATOR');
-INSERT INTO roles VALUES(3, 'ROLE_ADMIN');
-
--- init with test and testtest, todo remove me in production (what could possibly go wrong)
-INSERT INTO users VALUES(1, '$2a$10$vpFqQIbEm0Zd0eco2hLxgOTiujxoziOGvKgbX6KE1ud8hwdHJXsE2', 'test');
-
-INSERT INTO user_roles VALUES(1, 1);
-INSERT INTO user_roles VALUES(1, 2);
-INSERT INTO user_roles VALUES(1, 3);
+sql_prepend = """DELETE FROM glasses;
+ALTER TABLE glasses AUTO_INCREMENT = 1;
+DELETE FROM dispense;
+ALTER TABLE dispense AUTO_INCREMENT = 1;
+DELETE FROM eye;
+ALTER TABLE eye AUTO_INCREMENT = 1;
 """
 
 with open(Path("/home/thomas/projects/reims2-ansible/dump.sql"), 'w', encoding='utf-8') as f:
