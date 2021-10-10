@@ -33,7 +33,7 @@ def map_gender(x):
 def convert_to_dict(df):
     # remove RXX: prefix from SKU (not needed)
     df['SKU'] = df['SKU'].apply(lambda x: x.split(":")[-1].split(" ")[0])
-    df['TYPE'] = df['TYPE'].apply(lambda x: 'single' if x == 'S' else 'bifocal' if x == 'B' else 'unknown')
+    df['TYPE'] = df['TYPE'].apply(lambda x: 'single' if x == 'S' else 'multifocal' if x == 'B' else 'unknown')
     df['SIZE'] = df['SIZE'].apply(map_size)
     df['APPEARANCE'] = df['GENDER'].apply(map_gender)
     df = df.drop(columns=['TINT', 'GENDER', 'MATERIAL'])
@@ -48,7 +48,7 @@ def convert_to_dict(df):
         if col['sku'] == '':
             continue
         if any(c.isalpha() for c in col['sku']):
-            col['sku'] = -1
+            raise Exception("bad sku" + col['sku'])
         od_df = {'sphere': float(col['odsphere']), 'axis': int(col['odaxis']), 'cylinder': float(col['odcylinder'])}
         os_df = {'sphere': float(col['ossphere']), 'axis': int(col['osaxis']), 'cylinder': float(col['oscylinder'])}
         if col['type'] != 'single':
@@ -95,11 +95,11 @@ def convert_to_mysql(glasses):
 
 
 # Converting to JSON for testing in frontend
-dbf_sa = DBF(Path("files/GLSKU_SA.dbf"))
-dbf_sm = DBF(Path("files/GLSKU_SM.dbf"))
-df_sa = pd.DataFrame(iter(dbf_sa))
-df_sm = pd.DataFrame(iter(dbf_sm))
-df = pd.concat([df_sa, df_sm])
+df_sa = pd.DataFrame(iter(DBF(Path("files/GLSKU_SA22.dbf"))))
+df_sm = pd.DataFrame(iter(DBF(Path("files/GLSKU_SM22.dbf"))))
+df_reader_sa = pd.DataFrame(iter(DBF(Path("files/READD_SA22.dbf"))))
+df_reader_sm = pd.DataFrame(iter(DBF(Path("files/READD_SM22.dbf"))))
+df = pd.concat([df_sa, df_sm, df_reader_sa, df_reader_sm])
 final = convert_to_dict(df)
 
 # dbf_dispense_sa = DBF(Path("files/DISPENSE_SA.dbf"))
@@ -121,6 +121,7 @@ with open(Path("/home/thomas/projects/reims2-ansible/dump.sql"), 'w', encoding='
     for line in sql_queries:
         f.write(f"{line}\n")
 
+print("Export success")
 
 # with open(Path("../").resolve() / "reims2-frontend/assets/out.json", 'w', encoding='utf-8') as f:
 #     json.dump(final, f, ensure_ascii=False, indent=4)
