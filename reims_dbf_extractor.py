@@ -7,6 +7,14 @@ import aiohttp
 import pandas as pd
 from dbfread import DBF
 
+invalid_skus = [3621,
+                3229,
+                8638,
+                9366,
+                546,
+                1769,
+                2960]
+
 
 def map_size(x):
     if x == 'S':
@@ -49,6 +57,8 @@ def convert_to_dict(df):
             continue
         if any(c.isalpha() for c in col['sku']):
             raise Exception("bad sku" + col['sku'])
+        if int(col['sku']) in invalid_skus:
+            continue
         od_df = {'sphere': float(col['odsphere']), 'axis': int(col['odaxis']), 'cylinder': float(col['odcylinder'])}
         os_df = {'sphere': float(col['ossphere']), 'axis': int(col['osaxis']), 'cylinder': float(col['oscylinder'])}
         if col['type'] != 'single':
