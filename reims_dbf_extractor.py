@@ -67,6 +67,7 @@ def convert_to_dict(df):
         location = 'sm' if int(col['sku']) > 5000 else 'sa'
         final.append({'sku': int(col['sku']), 'glassesType': col['type'], 'od': od_df, 'os': os_df,
                       'appearance': col['appearance'], 'glassesSize': col['size'], 'location': location, 'creationDate': col['enterdate'].isoformat() + ' 00:00:00'})
+    print(f"Total glasses {len(final)}")
     return final
 
 
@@ -107,6 +108,9 @@ def convert_to_mysql(glasses):
 # Converting to JSON for testing in frontend
 df_sa = pd.DataFrame(iter(DBF(Path("files/GLSKU_SA22.dbf"))))
 df_sm = pd.DataFrame(iter(DBF(Path("files/GLSKU_SM22.dbf"))))
+
+# NOTE: This is here because the glasses for 2022 were wrongly added using "Add Readers"
+# Please beware this also when comparing Philscore results in REIMS1!!!
 df_reader_sa = pd.DataFrame(iter(DBF(Path("files/READD_SA22.dbf"))))
 df_reader_sm = pd.DataFrame(iter(DBF(Path("files/READD_SM22.dbf"))))
 df = pd.concat([df_sa, df_sm, df_reader_sa, df_reader_sm])
@@ -126,7 +130,7 @@ DELETE FROM eye;
 ALTER TABLE eye AUTO_INCREMENT = 1;
 """
 
-with open(Path("/home/thomas/projects/reims2-ansible/dump.sql"), 'w', encoding='utf-8') as f:
+with open(Path("/home/thomas/projects/reims2-ansible-playbook/dump.sql"), 'w', encoding='utf-8') as f:
     f.write(sql_prepend + "\n")
     for line in sql_queries:
         f.write(f"{line}\n")
