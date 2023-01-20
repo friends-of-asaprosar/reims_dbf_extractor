@@ -64,9 +64,10 @@ def convert_to_dict(df):
         if col['type'] != 'single':
             od_df['add'] = float(col['odadd'])
             os_df['add'] = float(col['osadd'])
-        location = 'sm' if int(col['sku']) > 5000 else 'sa'
+        location = 'sm' if int(col['sku']) >= 5001 else 'sa'
         final.append({'sku': int(col['sku']), 'glassesType': col['type'], 'od': od_df, 'os': os_df,
                       'appearance': col['appearance'], 'glassesSize': col['size'], 'location': location, 'creationDate': col['enterdate'].isoformat() + ' 00:00:00'})
+    final = sorted(final, key=lambda d: d['sku'])
     print(f"Total glasses {len(final)}")
     return final
 
@@ -130,12 +131,14 @@ DELETE FROM eye;
 ALTER TABLE eye AUTO_INCREMENT = 1;
 """
 
-with open(Path("/home/thomas/projects/reims2-ansible-playbook/dump.sql"), 'w', encoding='utf-8') as f:
+export_path = Path("../reims2-ansible-playbook/dump.sql").resolve()
+
+with open(export_path, 'w', encoding='utf-8') as f:
     f.write(sql_prepend + "\n")
     for line in sql_queries:
         f.write(f"{line}\n")
 
-print("Export success")
+print(f"Exported successfully to {export_path}")
 
 # with open(Path("../").resolve() / "reims2-frontend/assets/out.json", 'w', encoding='utf-8') as f:
 #     json.dump(final, f, ensure_ascii=False, indent=4)
